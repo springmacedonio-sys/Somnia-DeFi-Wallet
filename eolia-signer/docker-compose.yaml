@@ -20,7 +20,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - C:/Users/mertc/AppData/Roaming/turnkey/keys:/root/.config/turnkey/keys:ro
+      - C:/Users/Albert/AppData/Roaming/turnkey/keys:/root/.config/turnkey/keys:ro
     restart: unless-stopped
     depends_on:
       - db
