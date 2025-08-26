@@ -203,3 +203,10 @@ func (t *TurnkeyClient) SignMultipleHash(accountAddress string, hash []string) (
 
 	return processedSignatures, nil
 }
+
+// DefaultOrganization returns the hardcoded organization ID for Turnkey API calls
+// 返回硬编码的组织 ID 用于 Turnkey API 调用
+func (t *TurnkeyClient) DefaultOrganization() *string {
+	orgID := "6c00de4c-46f5-4519-822e-4ab049960f41"
+	return &orgID
+}

@@ -1,6 +1,6 @@
-chain_id: 196 // XLayer Chain ID
-rpc_url: "https://rpc.xlayer.tech" // Public RPC URL for XLayer
-entry_point: "0x379FF91b96c038ECb0dc6aCFb44366a39f0de566" // EntryPoint Contract Address in XLayer
-factory: "0xC924da88e33fD1eD04f4A8a1f6BD14Ad030a3dC9" // Account Factory Contract Address in XLayer
-bundlr_address: "YourAddressHere" // It should have some balance to pay for Bundlr transactions
-bundlr_private_key: "YourPrivateKeyHere"
+chain_id: 196 # XLayer Chain ID
+rpc_url: "https://rpc.xlayer.tech" # Public RPC URL for XLayer
+entry_point: "0x379FF91b96c038ECb0dc6aCFb44366a39f0de566" # EntryPoint Contract Address in XLayer
+factory: "0xC924da88e33fD1eD04f4A8a1f6BD14Ad030a3dC9" # Account Factory Contract Address in XLayer
+bundlr_address: "0x6276F2BA1c2e4C0572D87714fB3bCAEc4fc034b9" # It should have some balance to pay for Bundlr transactions
+bundlr_private_key: "216053bbf6488ffd868d85515c7f6c64c1b649bcd984f7a20189991eb47fac35"
