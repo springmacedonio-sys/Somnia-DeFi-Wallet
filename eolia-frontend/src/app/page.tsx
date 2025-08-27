@@ -137,9 +137,19 @@ export default function Home() {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <h1 className="text-center leading-tight font-bold text-[48px] md:text-[52px] mb-8 font-mono tracking-wider" style={{ textShadow: '0 0 15px rgba(0, 255, 255, 0.6)' }}>
-            <span className="block leading-14 text-cyan-400 mb-2">DISCOVER THE</span>
-            <span className="block leading-14 text-yellow-400">FREEDOM OF</span>
+            <span className="block leading-14 text-cyan-400 mb-2"> </span>
+            <span className="block leading-14 text-cyan-400">DISCOVER THE FREEDOM OF</span>
             <span className="block leading-14 text-pink-400">SELF-CUSTODY</span>
+            <span className="block leading-14 text-purple-400 flex items-center justify-center gap-3">
+              With Somnia
+              <Image 
+                src="/somnia.png" 
+                alt="Somnia Logo" 
+                width={100} 
+                height={100} 
+                className="filter brightness-110 contrast-125 drop-shadow-lg"
+              />
+            </span>
           </h1>
           
           {/* 像素化装饰边框 / Pixelated decorative border */}
