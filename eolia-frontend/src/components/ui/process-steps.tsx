@@ -85,7 +85,7 @@ export default function ProcessSteps({
           let price = "0";
 
           try {
-            price = await getPrice("0xe538905cf8410324e03a5a23c1c177a474d59b2b", 18);
+            price = await getPrice("0x0000000000000000000000000000000000000000", 18);
           } catch (error) {
             console.error("Error fetching price:", error);
           }

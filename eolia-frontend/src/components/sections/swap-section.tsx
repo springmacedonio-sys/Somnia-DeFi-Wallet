@@ -95,13 +95,13 @@ const SwapSection = ({ user }: { user: WalletProps | null }) => {
         amount: parseAmount(fromAmount, fromToken.decimals).toString(),
         slippage: "0.005"
       })
-      const OKB_PRICE = await getPrice("0xe538905cf8410324e03a5a23c1c177a474d59b2b", 18);
-      if (!totalGas || !OKB_PRICE || OKB_PRICE === "") {
-        console.error("Failed to fetch gas fee or OKB price");
+      const STT_PRICE = await getPrice("0x0000000000000000000000000000000000000000", 18);
+      if (!totalGas || !STT_PRICE || STT_PRICE === "") {
+        console.error("Failed to fetch gas fee or STT price");
         return;
       }
 
-      const formattedGasFee = formatAmountToUSD(totalGas, 18, Number(OKB_PRICE));
+      const formattedGasFee = formatAmountToUSD(totalGas, 18, Number(STT_PRICE));
       setRawGasFee(formatAmount(totalGas, 18));
       setGasFee(formattedGasFee);
       setEvents(events);
@@ -272,7 +272,7 @@ const SwapSection = ({ user }: { user: WalletProps | null }) => {
           {stage === "gas-calculated" && gasFee && (
             <div className="bg-white p-4 rounded-xl w-full shadow text-sm text-[#292929] mb-4 text-center">
               <p className="font-medium mb-1">Estimated Gas Fee</p>
-              <p className="text-base font-semibold">{gasFee} $ <span className="text-xs text-gray-500">({rawGasFee} OKB)</span></p>
+              <p className="text-base font-semibold">{gasFee} $ <span className="text-xs text-gray-500">({rawGasFee} STT)</span></p>
               <p className="text-xs text-gray-500 mt-1">This is required to process your transaction on-chain.</p>
             </div>
           )}

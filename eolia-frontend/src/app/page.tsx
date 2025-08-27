@@ -108,24 +108,9 @@ export default function Home() {
       </div>
 
       <header className="w-full py-6 flex items-center justify-between max-w-[600px] mx-auto z-20">
-        <div className="flex items-center gap-2">
-          {/* 像素化 Logo / Pixelated Logo */}
-          <div className="relative">
-            <Image src="/logo.png" alt="Smart Logo" width={38} height={38} className="filter contrast-150 brightness-110" />
-            <div className="absolute inset-0 border-2 border-cyan-400 opacity-70" style={{ clipPath: 'polygon(0 0, 100% 0, 90% 100%, 10% 100%)' }}></div>
-          </div>
-          <div className="flex flex-col">
-            <p className="text-xl font-bold text-cyan-400 tracking-wider" style={{ textShadow: '0 0 8px rgba(0, 255, 255, 0.8)' }}>
-              Smart
-            </p>
-            <div className="w-full h-1 bg-gradient-to-r from-cyan-400 to-transparent opacity-80"></div>
-          </div>
-        </div>
+       
         
-        {/* 保持原有按钮样式 / Keep original button style */}
-        <Button className="bg-[#fafafa] text-[#1f1f1f] text-[12px] hover:bg-[#fff] border-[#c8c7c7] border w-[90px] cursor-pointer">
-          <p>Contact Us</p>
-        </Button>
+       
       </header>
 
       <div key="landing" className="flex flex-col items-center justify-center mt-auto mb-0 relative z-10">
@@ -275,8 +260,8 @@ export default function Home() {
               
               {/* 按钮内容 / Button content */}
               <div className="flex flex-col items-center gap-2 relative z-10">
-                <span className="text-sm font-bold tracking-wider text-black">START USING</span>
-                <span className="text-sm font-bold tracking-wider text-black">EOLIA</span>
+                <span className="text-3xl font-mono tracking-wider text-black">START</span>
+        
               </div>
               
               {/* 能量波纹效果 - 增强版 / Enhanced energy wave effect */}

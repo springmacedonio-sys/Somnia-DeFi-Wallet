@@ -212,13 +212,7 @@ export default function Wallet() {
   return (
     <main style={{ backgroundImage: `url(bg-a.png)` }} className="bg-no-repeat bg-cover bg-center relative flex flex-col items-center h-screen w-screen gap-10 bg-[#f4f4fd] overflow-hidden font-sfpro">
       <header className="w-full py-6 flex items-center justify-between max-w-[600px] mx-auto z-20">
-        <div className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Eolia Logo" width={38} height={38} />
-          <p className="text-xl font-semibold text-[#1f1f1f]">Eolia</p>
-        </div>
-        <Button className="bg-[#fafafa] text-[#1f1f1f] text-[12px] hover:bg-[#fff] border-[#c8c7c7] border w-[90px] cursor-pointer">
-          <p>Contact Us</p>
-        </Button>
+      
       </header>
 
       <AnimatePresence mode='wait'>
