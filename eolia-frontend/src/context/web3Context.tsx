@@ -3,7 +3,7 @@
 import { createContext, useContext, useState } from "react";
 import { getTokenBalance } from "@/lib/getBalance";
 import { tokens } from "@/constants/tokens";
-import { getPrice } from "@/lib/okx/client";
+import { getPrice } from "@/lib/somnia/client";
 import { trimToDecimals } from "@/utils/decimals";
 import { delay } from "@/utils/utils";
 
