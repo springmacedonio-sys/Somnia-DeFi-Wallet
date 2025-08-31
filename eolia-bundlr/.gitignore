@@ -1,0 +1,14 @@
+# Go binaries
+*.exe
+*.bin
+
+# Go dependency files
+go.sum
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+config.yaml

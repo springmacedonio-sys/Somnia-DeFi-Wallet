@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:15
+    container_name: smart_signer_postgres
+    environment:
+      POSTGRES_USER: smart
+      POSTGRES_PASSWORD: signerpass
+      POSTGRES_DB: signerdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  app:
+    container_name: smart_signer_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - C:/Users/mertc/AppData/Roaming/turnkey/keys:/root/.config/turnkey/keys:ro
+    restart: unless-stopped
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
