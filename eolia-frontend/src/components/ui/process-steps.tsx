@@ -1,6 +1,6 @@
 'use client'
 
-import { getPrice } from "@/lib/okx/client";
+import { getPrice } from "@/lib/somnia/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -85,7 +85,8 @@ export default function ProcessSteps({
           let price = "0";
 
           try {
-            price = await getPrice("0xe538905cf8410324e03a5a23c1c177a474d59b2b", 18);
+            // Use Somnia native STT for gas token pricing / 使用 Somnia 原生 STT 作为 gas 代币定价
+            price = await getPrice("0x0000000000000000000000000000000000000000", 18);
           } catch (error) {
             console.error("Error fetching price:", error);
           }
@@ -155,7 +156,9 @@ export default function ProcessSteps({
                     <div className="mb-2">
                       <span className="font-medium">Tx Hash:</span>{" "}
                       <a
-                        href={`https://www.oklink.com/x-layer/tx/${receipt.receipt.transactionHash}`}
+                        // Somnia explorer placeholder; replace with official explorer if available
+                        // Somnia 浏览器占位符；若有官方浏览器请替换
+                        href={`https://dreamscan.somnia.network/tx/${receipt.receipt.transactionHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#9257f3] underline break-all"
