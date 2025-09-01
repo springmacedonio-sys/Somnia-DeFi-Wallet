@@ -1,21 +1,21 @@
-# 🌐 Eolia Frontend
+# 🌐 Somnia Frontend
 
-**Eolia Frontend** is the user interface for the **Eolia Smart Wallet** — an Account Abstraction-based wallet built for the **OKX ETH CC Hackathon**.
+**Somnia Frontend** is the user interface for the **Somnia Smart Wallet** — an Account Abstraction-based wallet built for the **Somnia DeFi Mini Hackathon**.
 
 This frontend allows users to:
   
 - 🔑 Log in via OAuth (Google, GitHub, Apple)
-- 💱 Swap tokens directly using **OKX DEX API**
+- 💱 Swap tokens directly using **Somnex**
 - 📊 View balances, token lists, and transaction history
-- 🛡️ Interact securely with the Eolia Signer & Bundler services
+- 🛡️ Interact securely with the Somnia Signer & Bundler services
 
 ---
 
 ## ✨ Features
 
 - **Next.js 15+ App Router** with TypeScript
-- **OKX DEX API Integration** for on-wallet swaps
-- **Account Abstraction (ERC‑4337)** support via Eolia Signer & Bundler
+- **Somnia DEX API Integration** for on-wallet swaps
+- **Account Abstraction (ERC‑4337)** support via Somnia Signer & Bundler
 - **next-auth** for OAuth login
 - **Viem** for blockchain RPC connections
 - Clean, animated UI with **framer-motion**
@@ -25,7 +25,7 @@ This frontend allows users to:
 ## 📂 Project Structure
 
 ```plaintext
-eolia-frontend
+somnia-frontend
 │
 ├── public/                   # Static assets
 ├── src/
@@ -38,7 +38,7 @@ eolia-frontend
 │   │   └── ui/                 
 │   ├── constants/              # Token lists, constants
 │   ├── context/                # React context (e.g., Web3Context)
-│   ├── lib/                    # API clients (OKX, balance, tx utils)
+│   ├── lib/                    # API clients (Somnia, balance, tx utils)
 │   ├── types/                  # Shared TS types
 │   └── utils/                  # Formatting, decimals, helper functions
 ├── .env                        # Environment variables (not committed)
@@ -56,15 +56,15 @@ eolia-frontend
   
 - Node.js 18+
 - pnpm / yarn / npm
-- Running instances of **Eolia Signer** and **Eolia Bundlr**
+- Running instances of **Somnia Signer** and **Somnia Bundlr**
 
 ### Steps
 
 1. **Clone the repository**
   
    ```bash
-   git clone https://github.com/EoliaWallet/eolia-frontend.git
-   cd eolia-frontend
+   git clone https://github.com/springmacedonio-sys/Somnia-DeFi-Wallet.git
+   cd somnia-frontend
    ```
 
 2. **Install dependencies**
@@ -85,10 +85,6 @@ eolia-frontend
    NEXT_GITHUB_CLIENT_ID=...
    NEXT_GITHUB_CLIENT_SECRET=...
    NEXT_AUTH_SECRET=...
-   NEXT_OKX_API_KEY=...
-   NEXT_OKX_SECRET_KEY=...
-   NEXT_OKX_API_PASSPHRASE=...
-   NEXT_OKX_PROJECT_ID=...
    NEXT_PUBLIC_ENTRYPOINT_ADDRESS=...
    ```
 
@@ -112,7 +108,6 @@ eolia-frontend
 - **Next.js 15+ App Router**
 - **TypeScript**
 - **Viem** – Blockchain RPC
-- **OKX DEX API**
 - **next-auth** – OAuth
 - **framer-motion** – Animations
 - **Tailwind CSS** – Styling

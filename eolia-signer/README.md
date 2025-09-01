@@ -1,6 +1,6 @@
-# 🚀 Eolia Signer
+# 🚀 Somnia Signer
 
-**Eolia Signer** is the secure signing backend service for **Eolia Smart Wallet** — an Account Abstraction-based wallet built for the **OKX ETH CC Hackathon**.
+**Somnia Signer** is the secure signing backend service for **Somnia Smart Wallet** — an Account Abstraction-based wallet built for the **Somnia DeFi Mini Hackathon**.
 
 This service handles:
   
@@ -9,11 +9,11 @@ This service handles:
 - Preparing & signing **UserOperations**
 - Transaction history tracking for the frontend
 
-Eolia Signer is **1 of the 4 core components** of the Eolia ecosystem:
+Somnia Signer is **1 of the 4 core components** of the Somnia ecosystem:
 
 1. **Frontend** (Next.js) – User interface  
-2. **Eolia Signer** (this service) – Secure signing & account logic  
-3. **Eolia Bundler** – UserOperation validation & relay to EntryPoint  
+2. **Somnia Signer** (this service) – Secure signing & account logic  
+3. **Somnia Bundler** – UserOperation validation & relay to EntryPoint  
 4. **Smart Contracts** – EntryPoint, SmartAccount, Factory deployed on Somnia Testnet
 
 ---
@@ -31,7 +31,7 @@ Eolia Signer is **1 of the 4 core components** of the Eolia ecosystem:
 ## 📂 Project Structure
 
 ```plaintext
-EOLIA-SIGNER
+SOMNIA-SIGNER
 │
 ├── db/               # Database connection & errors
 ├── ethclient/        # Somnia Testnet RPC client & ABIs
@@ -62,14 +62,14 @@ EOLIA-SIGNER
 1. **Clone the repository**
   
    ```bash
-   git clone https://github.com/username/eolia-signer.git
+   git clone https://github.com/springmacedonio-sys/Somnia-DeFi-Wallet.git
    cd eolia-signer
    ```
 
 2. **Set environment variables** in `.env`
   
    ```env
-   DB_CONN_STR=postgres://user:password@localhost:5432/eolia
+   DB_CONN_STR=postgres://user:password@localhost:5432/somnia
    JWT_SECRET=supersecret
    ```
 

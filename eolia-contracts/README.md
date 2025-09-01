@@ -1,11 +1,11 @@
-# Eolia Contracts
+# Somnia Contracts
 
-Smart Account & EntryPoint implementation for **Eolia Wallet**, deployed on Somnia Testnet for the hackathon project.
+Smart Account & EntryPoint implementation for **Somnia Wallet**, deployed on Somnia Testnet for the **Somnia DeFi Mini Hackathon** project.
 
 ## 📂 Project Structure
   
 ```plaintext
-eolia-contract/
+somnia-contracts/
 ├── contracts/               # Solidity smart contracts
 │   ├── accounts/             # Account logic
 │   ├── core/                 # Core interfaces
