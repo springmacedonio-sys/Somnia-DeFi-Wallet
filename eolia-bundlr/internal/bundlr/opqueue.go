@@ -1,7 +1,7 @@
 package bundlr
 
 import (
-	"eolia-bundlr/internal/types"
+	"somnia-bundlr/internal/types"
 	"errors"
 	"fmt"
 	"sync"

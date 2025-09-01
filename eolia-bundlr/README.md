@@ -1,11 +1,11 @@
-# 🚀 Eolia Bundlr
+# 🚀 Somnia Bundlr
 
-**Eolia Bundlr** is the custom **ERC‑4337 bundler** for the **Eolia Smart Wallet**.  
+**Somnia Bundlr** is the custom **ERC‑4337 bundler** for the **Somnia Smart Wallet**.  
 It validates incoming **UserOperations**, runs lightweight simulations, and relays valid ops to the **EntryPoint** contract on **Somnia Testnet**. It also exposes a small HTTP API for the frontend/backend to submit ops and query basic status.
 
-This repository is one of **4 core components** in the Eolia stack:
+This repository is one of **4 core components** in the Somnia stack:
 
-1. **Frontend** (Next.js) – UI & OKX DEX integration  
+1. **Frontend** (Next.js) – UI & Somnia DEX integration  
 2. **Signer** (Go) – Account creation, Turnkey signing, UserOp building  
 3. **Bundlr** (this repo) – Validation + relay to EntryPoint  
 4. **Smart Contracts** – EntryPoint / SmartAccount / Factory deployed on **Somnia Testnet**
@@ -28,7 +28,7 @@ This repository is one of **4 core components** in the Eolia stack:
 ## 📂 Project Structure
 
 ```plaintext
-EOLIA-BUNDLR
+SOMNIA-BUNDLR
 │
 ├── cmd/bundlr/        # Application entrypoint (main.go)
 ├── config/            # Config loader & config.yaml
