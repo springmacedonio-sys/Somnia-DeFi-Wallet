@@ -39,7 +39,7 @@ export default function HistorySection({ user }: { user: WalletProps | null }) {
             <div className="flex items-center gap-2">
               <img
                 className="h-8 w-8 rounded-full"
-                src="https://altcoinsbox.com/wp-content/uploads/2023/03/okx-logo-black-and-white.jpg"
+                src="/somnia.png"
                 alt="dex"
               />
               <div className="flex flex-col gap-[1px]">

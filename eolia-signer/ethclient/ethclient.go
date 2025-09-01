@@ -66,7 +66,9 @@ func NewClient(url string, entrypoint string, factory string) *Client {
 }
 
 func (c *Client) GetCalculatedAddress(address common.Address, salt *big.Int) (common.Address, error) {
-	data, err := c.factory.Pack("getAddress", address, salt)
+	// 通过工厂合约的 computeAccountAddress 计算反事实地址（必须与链上 ABI 一致）
+	// Compute counterfactual address via factory's computeAccountAddress (must match on-chain ABI)
+	data, err := c.factory.Pack("computeAccountAddress", address, salt)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -82,7 +84,7 @@ func (c *Client) GetCalculatedAddress(address common.Address, salt *big.Int) (co
 	}
 
 	var result common.Address
-	err = c.factory.UnpackIntoInterface(&result, "getAddress", output)
+	err = c.factory.UnpackIntoInterface(&result, "computeAccountAddress", output)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -92,6 +94,11 @@ func (c *Client) GetCalculatedAddress(address common.Address, salt *big.Int) (co
 }
 
 func (c *Client) AccountNeedsInitialization(sender common.Address, owner common.Address) []byte {
+	// 此函数用于判断账户是否已部署；若未部署，则返回 ERC-4337 所需的 initCode
+	// This function checks whether the account is deployed; if not, it returns the ERC-4337 initCode
+
+	// 1) 读取账户地址当前的字节码长度（0 代表未部署）
+	// 1) Read current bytecode at the account address (0 means not deployed)
 	byteCode, err := c.eth.CodeAt(context.Background(), sender, nil)
 	if err != nil {
 		fmt.Printf("Error fetching bytecode for %s: %v\n", sender.Hex(), err)
@@ -100,12 +107,20 @@ func (c *Client) AccountNeedsInitialization(sender common.Address, owner common.
 
 	fmt.Printf("Bytecode length for %s: %d\n", sender.Hex(), len(byteCode))
 
+	// 2) 若未部署，则拼接 initCode = <factoryAddress> || encode(createAccount(owner, salt))
+	//    注意：salt 必须与前端、地址计算（computeAccountAddress）保持一致，避免地址不匹配
+	// 2) If not deployed, build initCode = <factoryAddress> || encode(createAccount(owner, salt))
+	//    Note: salt MUST be consistent with frontend and computeAccountAddress to avoid mismatched address
 	if len(byteCode) == 0 {
+		// 当前统一使用 salt = 0（如需更改盐的派生方案，请确保全链路一致）
+		// We currently use salt = 0; if you change salt derivation, keep it consistent everywhere
 		encodedFunction, err := c.factory.Pack("createAccount", owner, big.NewInt(0))
 		if err != nil {
 			return nil
 		}
 
+		// 将工厂地址（20字节）与编码后的函数数据拼接
+		// Concatenate factory address (20 bytes) with encoded function data
 		addressInBytes := c.factoryAddress.Bytes()
 		initCode := append(addressInBytes, encodedFunction...)
 
@@ -118,6 +133,8 @@ func (c *Client) AccountNeedsInitialization(sender common.Address, owner common.
 		return initCode
 	}
 
+	// 已部署则无需 initCode
+	// If already deployed, no initCode is needed
 	return nil
 }
 
