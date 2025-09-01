@@ -81,12 +81,70 @@ func (v *Validator) AccountNeedsInitialization(op *types.PackedUserOperation) (*
 	return op, nil
 }
 
+// decodeTwoUint128 从 32 字节中解析出两个 uint128（前 16 字节/后 16 字节）
+// decodeTwoUint128 decodes two uint128 values from a 32-byte packed field
+func decodeTwoUint128(packed [32]byte) (*big.Int, *big.Int) {
+	first := new(big.Int).SetBytes(packed[:16])
+	second := new(big.Int).SetBytes(packed[16:])
+	return first, second
+}
+
 func (v *Validator) SimulateHandleOp(op *types.PackedUserOperation) error {
+	// 额外诊断：打印基础上下文
+	// Extra diagnostics: print basic context
+	fmt.Printf("Bundlr context -> entryPoint=%s factory=%s bundlr=%s\n", v.EntryPoint.Hex(), v.Factory.Hex(), v.Bundlr.Hex())
+
+	// 解析 gas 字段
+	// Decode gas fields
+	verGas, callGas := decodeTwoUint128(op.AccountGasLimits)
+	prioFee, maxFee := decodeTwoUint128(op.GasFees)
+	fmt.Printf("Gas decode -> preVerificationGas=%s verificationGasLimit=%s callGasLimit=%s maxPriorityFeePerGas=%s maxFeePerGas=%s\n",
+		op.PreVerificationGas.String(), verGas.String(), callGas.String(), prioFee.String(), maxFee.String())
+
+	// 预估所需预存款（粗略）：(pvg + ver + call) * maxFee
+	// Rough required prefund: (pvg + ver + call) * maxFee
+	req := new(big.Int).Add(op.PreVerificationGas, verGas)
+	req = req.Add(req, callGas)
+	req = req.Mul(req, maxFee)
+	// 查询 EntryPoint 中的存款与原生余额
+	// Fetch EP deposit and native balance
+	depData, derr := v.EntryPointABI.Pack("balanceOf", op.Sender)
+	if derr == nil {
+		call := ethereum.CallMsg{To: &v.EntryPoint, Data: depData}
+		out, derr2 := v.Client.CallContract(context.Background(), call, nil)
+		if derr2 == nil {
+			var deposit *big.Int
+			if err := v.EntryPointABI.UnpackIntoInterface(&deposit, "balanceOf", out); err == nil {
+				fmt.Printf("Prefund -> required≈%s, ep.deposit=%s\n", req.String(), deposit.String())
+			}
+		}
+	}
+	if bal, ber := v.Client.BalanceAt(context.Background(), op.Sender, nil); ber == nil {
+		fmt.Printf("Native balance (sender) -> %s\n", bal.String())
+	}
+
 	// --- 预检查 Precheck ---
 	// 1) 若提供了 initCode，则校验由 initCode 推导的 sender 与 op.Sender 一致（AA14）
 	//    If initCode is provided, ensure initCode-derived sender equals op.Sender (AA14)
 	if len(op.InitCode) >= 20 {
+		// 打印 initCode 详情：工厂地址、选择器、owner、salt
+		// Print initCode details: factory, selector, owner, salt
+		var factoryAddr common.Address
+		copy(factoryAddr[:], op.InitCode[0:20])
+		calldata := op.InitCode[20:]
+		if len(calldata) >= 4 {
+			selector := fmt.Sprintf("0x%x", calldata[:4])
+			fmt.Printf("initCode -> factory=%s selector=%s\n", factoryAddr.Hex(), selector)
+		}
+		if owner, salt, perr := v.parseOwnerAndSaltFromInitCode(op.InitCode); perr == nil {
+			fmt.Printf("initCode args -> owner=%s salt=%s\n", owner.Hex(), salt.String())
+			if exp, cerr := v.computeAccountAddress(owner, salt); cerr == nil {
+				fmt.Printf("factory.computeAccountAddress(owner,salt) -> %s\n", exp.Hex())
+			}
+		}
+
 		if derived, derr := v.deriveSenderFromInitCode(op.InitCode); derr == nil {
+			fmt.Printf("getSenderAddress(initCode) -> %s\n", derived.Hex())
 			if derived != (common.Address{}) && derived.Hex() != op.Sender.Hex() {
 				return fmt.Errorf("precheck failed: initCode-derived sender %s != op.sender %s (AA14 initCode must return sender)", derived.Hex(), op.Sender.Hex())
 			}
@@ -96,13 +154,11 @@ func (v *Validator) SimulateHandleOp(op *types.PackedUserOperation) error {
 
 		// 2) 检查工厂记录的 senderCreator 与 EntryPoint 的 senderCreator 是否一致
 		//    Check factory.senderCreator matches entrypoint.senderCreator
-		var factoryAddr common.Address
-		copy(factoryAddr[:], op.InitCode[0:20])
 		if fsc, fErr := v.getFactorySenderCreator(factoryAddr); fErr == nil {
 			if esc, eErr := v.getEntryPointSenderCreator(); eErr == nil {
 				fmt.Printf("senderCreator check -> factory.senderCreator=%s, ep.senderCreator=%s\n", fsc.Hex(), esc.Hex())
 				if fsc.Hex() != esc.Hex() {
-					return fmt.Errorf("precheck failed: factory.senderCreator (%s) != entrypoint.senderCreator (%s). Redeploy factory with correct EntryPoint or configure a matching pair.", fsc.Hex(), esc.Hex())
+					return fmt.Errorf("precheck failed: factory.senderCreator (%s) != entrypoint.senderCreator (%s). Redeploy factory with correct EntryPoint or configure a matching pair", fsc.Hex(), esc.Hex())
 				}
 			}
 		}
@@ -113,7 +169,7 @@ func (v *Validator) SimulateHandleOp(op *types.PackedUserOperation) error {
 	}
 
 	ops := []types.PackedUserOperation{*op}
-	calldata, err := v.EntryPointABI.Pack("handleOps", ops, v.Bundlr)
+	calldata2, err := v.EntryPointABI.Pack("handleOps", ops, v.Bundlr)
 	if err != nil {
 		return fmt.Errorf("abi.Pack failed: %w", err)
 	}
@@ -122,7 +178,7 @@ func (v *Validator) SimulateHandleOp(op *types.PackedUserOperation) error {
 		From:              v.Bundlr,
 		To:                &v.EntryPoint,
 		AuthorizationList: nil,
-		Data:              calldata,
+		Data:              calldata2,
 		Gas:               15_000_000,
 	}
 
@@ -180,6 +236,45 @@ func (v *Validator) deriveSenderFromInitCode(initCode []byte) (common.Address, e
 		return common.Address{}, fmt.Errorf("revert data too short: %s", hexstr)
 	}
 	addr := common.HexToAddress("0x" + hexstr[len(hexstr)-40:])
+	return addr, nil
+}
+
+// parseOwnerAndSaltFromInitCode: 解析 initCode（factory + createAccount(address,uint256)）提取 owner 与 salt
+// parseOwnerAndSaltFromInitCode: parse owner & salt from initCode (factory + createAccount(address,uint256))
+func (v *Validator) parseOwnerAndSaltFromInitCode(initCode []byte) (common.Address, *big.Int, error) {
+	if len(initCode) < 20+4+32+32 {
+		return common.Address{}, nil, fmt.Errorf("initCode too short: %d", len(initCode))
+	}
+	calldata := initCode[20:]
+	// selector := calldata[0:4] // 0x5fbfb9cf expected
+	ownerWord := calldata[4 : 4+32]
+	saltWord := calldata[4+32 : 4+32+32]
+	var owner common.Address
+	copy(owner[:], ownerWord[12:]) // right-most 20 bytes
+	salt := new(big.Int).SetBytes(saltWord)
+	return owner, salt, nil
+}
+
+// computeAccountAddress: 调用工厂合约的 computeAccountAddress(owner,salt)
+func (v *Validator) computeAccountAddress(owner common.Address, salt *big.Int) (common.Address, error) {
+	abiJSON := `[{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"uint256","name":"salt","type":"uint256"}],"name":"computeAccountAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}]`
+	parsedAbi, err := abi.JSON(bytes.NewReader([]byte(abiJSON)))
+	if err != nil {
+		return common.Address{}, err
+	}
+	data, err := parsedAbi.Pack("computeAccountAddress", owner, salt)
+	if err != nil {
+		return common.Address{}, err
+	}
+	msg := ethereum.CallMsg{To: &v.Factory, Data: data}
+	output, err := v.Client.CallContract(context.Background(), msg, nil)
+	if err != nil {
+		return common.Address{}, err
+	}
+	var addr common.Address
+	if err := parsedAbi.UnpackIntoInterface(&addr, "computeAccountAddress", output); err != nil {
+		return common.Address{}, err
+	}
 	return addr, nil
 }
 
