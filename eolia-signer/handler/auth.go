@@ -88,6 +88,8 @@ func (h *Handler) AuthRegisterHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "wallet creation failed"})
 	}
 
+	// 统一使用相同的 salt（此处为 0），确保前端、Signer 与 initCode 一致
+	// Use a unified salt (0 here) across frontend, signer, and initCode
 	accountAddress, err := h.SmartSigner.EthClient.GetCalculatedAddress(common.HexToAddress(ownerAddress), big.NewInt(0))
 	if err != nil {
 		log.Printf("failed to get calculated address: %v", err)

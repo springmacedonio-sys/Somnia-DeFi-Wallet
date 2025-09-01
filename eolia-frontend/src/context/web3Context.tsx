@@ -49,36 +49,39 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   const fetchBalances = async (address: `0x${string}`) => {
     if (!address) return;
 
-    let total: number = 0;
-
-    const results: TokenBalance[] = [];
-
-    for (const token of tokens) {
+    // Parallelize per-token balance and price fetching to reduce latency
+    // 中文：并行获取每个代币的余额与价格，降低整体等待时间
+    const tasks = tokens.map(async (token) => {
       try {
-        const balance = await getTokenBalance(address, token.address as `0x${string}`, token.decimals);
-        const price = await getPrice(token.address as `0x${string}`, token.decimals);
+        const [balance, priceStr] = await Promise.all([
+          getTokenBalance(address, token.address as `0x${string}`, token.decimals),
+          getPrice(token.address as `0x${string}`, token.decimals),
+        ]);
 
-        total += balance * Number(price);
-        results.push({
+        const price = Number(priceStr);
+        const usdValue = (isFinite(price) && price > 0) ? balance * price : 0;
+
+        return {
           symbol: token.symbol,
           name: token.name,
           logo: token.logo,
           balance,
-          usdValue: balance * Number(price),
-        });
-
-        await delay(200);
+          usdValue,
+        } as TokenBalance;
       } catch (e) {
         console.error(`Error loading ${token.symbol}`, e);
-        results.push({
+        return {
           symbol: token.symbol,
           name: token.name,
           logo: token.logo,
           balance: 0,
           usdValue: 0,
-        });
+        } as TokenBalance;
       }
-    }
+    });
+
+    const results = await Promise.all(tasks);
+    const total = results.reduce((acc, t) => acc + t.usdValue, 0);
 
     setBalances(results);
     setTotalBalance(total);

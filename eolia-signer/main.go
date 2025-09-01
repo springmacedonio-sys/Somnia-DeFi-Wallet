@@ -40,7 +40,10 @@ func main() {
 	smartSigner := &signer.SmartSigner{
 		TurnkeyClient: turnkey.CreateTurnkeyClient(),
 		DB:            db.CreateDBPool(),
-		EthClient:     ethclient.NewClient("https://dream-rpc.somnia.network", "0xCdB8c2149BF625A2C17d6Dd1c4db362E94113A02", "0x54564209864FE737e2737664c143cb55328fc768"),
+		// 使用 Somnia Testnet 的实际部署地址 / Use the actual deployed addresses on Somnia Testnet
+		// EntryPoint: 0x8D2c6141D367eaDe0EaB2355Ab50E2273563ae40
+		// Factory:    0x715613A364251FB38969168d3afc22E5525E33fe
+		EthClient: ethclient.NewClient("https://dream-rpc.somnia.network", "0x8D2c6141D367eaDe0EaB2355Ab50E2273563ae40", "0x715613A364251FB38969168d3afc22E5525E33fe"),
 	}
 
 	h := &handler.Handler{

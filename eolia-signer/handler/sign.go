@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -61,7 +62,24 @@ func (h *Handler) SignHandler(c *fiber.Ctx) error {
 	log.Println("📥 SignRequest received")
 	log.Printf("🔐 Wallet: %s, Account: %s, Owner: %s", walletName, accountAddress, ownerAddress)
 
-	account := common.HexToAddress(accountAddress)
+	// 中文：为避免 initCode 与 sender 不一致（导致 AA14 错误），总是用工厂+owner+salt 计算反事实地址
+	// English: To avoid mismatch between initCode and sender (AA14), always compute the counterfactual address
+	//            from factory + owner + salt, instead of trusting the DB value blindly.
+	var account common.Address
+	expectedAccount, err := h.SmartSigner.EthClient.GetCalculatedAddress(common.HexToAddress(ownerAddress), big.NewInt(0))
+	if err != nil {
+		// 中文：计算失败时回退到 DB 中的地址，以保证不中断（但可能仍会失败）
+		// English: If computation fails, fall back to DB-stored address to avoid hard failure (may still fail)
+		log.Printf("⚠️ Failed to compute counterfactual address, fallback to provided account: %v", err)
+		account = common.HexToAddress(accountAddress)
+	} else {
+		if !strings.EqualFold(expectedAccount.Hex(), accountAddress) {
+			// 中文：日志提示：DB 存的地址与根据 initCode 推导的不一致；为确保通过模拟与执行，这里使用计算值
+			// English: Log a warning if DB's address differs from the initCode-derived address; use the computed one
+			log.Printf("⚠️ Sender mismatch: DB=%s, computed=%s. Using computed to match initCode.", accountAddress, expectedAccount.Hex())
+		}
+		account = expectedAccount
+	}
 
 	userOP := &types.PackedUserOperation{
 		Sender:             account,
@@ -80,6 +98,62 @@ func (h *Handler) SignHandler(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("failed to sign user operation: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "internal error"})
+	}
+
+	// 规范化签名的 v 值（若为 0/1 则转换为 27/28）
+	// Normalize signature 'v' value: convert 0/1 to 27/28 when needed
+	sigHex := strings.TrimPrefix(sig, "0x")
+	if b, err := hex.DecodeString(sigHex); err == nil {
+		if len(b) == 65 {
+			// ECDSA v 值期望为 27 或 28；部分签名器返回 0/1，这里做兼容转换
+			// Solidity ECDSA.recover expects v in {27,28}; some signers return {0,1}
+			if b[64] == 0 || b[64] == 1 {
+				b[64] = b[64] + 27
+				newSig := "0x" + hex.EncodeToString(b)
+				log.Printf("Adjusted signature v from {0/1} to {27/28}. v=%d", b[64])
+				sig = newSig
+			}
+		}
+	}
+
+	// --- 额外诊断日志 Extra diagnostics ---
+	// 中文：解码 AccountGasLimits(verificationGasLimit, callGasLimit) 与 GasFees(maxPriorityFeePerGas, maxFeePerGas)
+	// English: Decode AccountGasLimits and GasFees (two uint128 values each)
+	decodeTwoUint128 := func(packedHex string) (string, string) {
+		packed := strings.TrimPrefix(packedHex, "0x")
+		bytes32, _ := hex.DecodeString(packed)
+		if len(bytes32) != 32 {
+			return "0", "0"
+		}
+		// 前 16 字节 / first 16 bytes
+		a := new(big.Int).SetBytes(bytes32[:16])
+		// 后 16 字节 / last 16 bytes
+		b := new(big.Int).SetBytes(bytes32[16:])
+		return a.String(), b.String()
+	}
+
+	verGas, callGas := decodeTwoUint128(req.AccountGasLimits)
+	prio, maxf := decodeTwoUint128(req.GasFees)
+
+	log.Printf("UserOp fields -> sender=%s nonce=%s initCodeLen=%d callDataLen=%d paymasterLen=%d",
+		userOP.Sender.Hex(), userOP.Nonce.String(), len(userOP.InitCode), len(userOP.CallData), len(userOP.PaymasterAndData))
+	log.Printf("Gas -> preVerificationGas=%s verificationGasLimit=%s callGasLimit=%s maxPriorityFeePerGas=%s maxFeePerGas=%s",
+		req.PreVerificationGas, verGas, callGas, prio, maxf)
+
+	// 尝试恢复签名地址，确认与 owner 一致 Try recovering address from signature and compare with owner
+	if sigBytes, err := hex.DecodeString(strings.TrimPrefix(sig, "0x")); err == nil && len(sigBytes) == 65 {
+		recSig := make([]byte, 65)
+		copy(recSig, sigBytes)
+		if recSig[64] >= 27 {
+			recSig[64] -= 27
+		}
+		pub, err := crypto.SigToPub(userOpHash.Bytes(), recSig)
+		if err == nil {
+			recovered := crypto.PubkeyToAddress(*pub)
+			log.Printf("Signature recover -> %s (expected owner %s)", recovered.Hex(), ownerAddress)
+		} else {
+			log.Printf("Signature recover failed: %v", err)
+		}
 	}
 
 	userOpJson := &types.RawPackedUserOperation{

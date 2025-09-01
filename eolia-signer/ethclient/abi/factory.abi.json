@@ -60,7 +60,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getAddress",
+    "name": "computeAccountAddress",
     "outputs": [
       {
         "internalType": "address",
