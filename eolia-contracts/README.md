@@ -49,8 +49,8 @@ pnpm hardhat verify --network somnia <contractAddress> <constructorArgs...>
 
 ## 📜 Deployed Addresses (Somnia Testnet)
   
-- **EntryPoint**: `0x...`
-- **SimpleAccountFactory**: `0x...`
+- **EntryPoint**: `0x8D2c6141D367eaDe0EaB2355Ab50E2273563ae40`
+- **SimpleAccountFactory**: `0x715613A364251FB38969168d3afc22E5525E33fe`
 
 ## 🛠 Helper Scripts
   
